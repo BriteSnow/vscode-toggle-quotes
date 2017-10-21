@@ -3,10 +3,10 @@
     "displayName": "Toggle Quotes",
     "description": "Toggle cycle \" -> ' -> `",
     "version": "0.1.0",
-    "publisher": "jeremychone",
+    "publisher": "BriteSnow",
     "repository": {
         "type": "git",
-        "url": "git@github.com:BriteSnow/vscode-toggle-quotes.git"
+        "url": "git@github.com:BriteSnow/vscode-toggle-quotes.gitsudo "
     },    
     "engines": {
         "vscode": "^1.17.0"
