@@ -7,3 +7,6 @@ src/**
 .gitignore
 tsconfig.json
 vsc-extension-quickstart.md
+
+# best practice, anything starting with ~ is meant to be private
+~*
