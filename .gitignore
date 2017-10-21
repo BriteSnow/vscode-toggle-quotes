@@ -1,2 +1,5 @@
 out
 node_modules
+
+# best practice, anything starting with ~ is meant to be private
+~*

@@ -1,4 +1,4 @@
-`cmd '` will toggle the first quote pair found from the start/end of the section following the sequence `"` to `'` to ` 
+`cmd '` will toggle the first quote pair found (from the start/end of the section) through the following sequence: `"` to `'` to ` 
 
 #### Currently implemented: 
 
@@ -7,4 +7,4 @@
 
 #### Upcoming
 
-- Ignore escaped quotes (e.g. `\"`)
+- Ignore escaped quotes (e.g., `\"`)
