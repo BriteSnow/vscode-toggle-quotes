@@ -15,19 +15,42 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:editor.togglequote"
+        "onCommand:editor.togglequotes"
     ],
     "main": "./out/src/extension",
     "contributes": {
+        "configuration": {
+            "type": "object",
+            "title": "toggle-quotes configuration",
+            "properties": {
+                "togglequotes.chars": {
+                    "type": "array",
+                    
+                    "default": ["\"","'"],
+                    "description": "Type of quotes to toggle from."
+                }
+            }
+        },
+        "configurationDefaults": {          
+            "[typescript]": {
+                "togglequotes.chars": ["\"","'","`"]
+            },
+            "[javascript]": {
+                "togglequotes.chars": ["\"","'","`"]
+            },
+            "[markdown]": {
+                "togglequotes.chars": ["\"","'","`"]
+            }                                    
+        },
         "commands": [
             {
-                "command": "editor.togglequote",
+                "command": "editor.togglequotes",
                 "title": "Toggle Quote"
             }
         ],
         "keybindings": [
             {
-                "command": "editor.togglequote",
+                "command": "editor.togglequotes",
                 "key": "cmd+'"
             }
         ]

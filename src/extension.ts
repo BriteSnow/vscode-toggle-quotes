@@ -1,7 +1,7 @@
 'use strict';
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import { window, TextLine, Position, Selection, commands, ExtensionContext } from 'vscode';
+import { window, workspace, WorkspaceConfiguration, TextLine, Position, Selection, commands, ExtensionContext, TextEditor } from 'vscode';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -13,40 +13,39 @@ export function activate(context: ExtensionContext) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
-	let togglequoteCommand = commands.registerCommand('editor.togglequote', () => {
+	let togglequotesCommand = commands.registerCommand('editor.togglequotes', () => {
 		// The code you place here will be executed every time your command is executed
 		toggle();
 		// Display a message box to the user
 		// window.showInformationMessage('toggle ran');
 	});
 
-	context.subscriptions.push(togglequoteCommand);
+	context.subscriptions.push(togglequotesCommand);
 }
 
 // this method is called when your extension is deactivated
 export function deactivate() {
 }
 
-// Chars to be recognized (and toggle order)
-const chars = ["'", '`', '"'];
-
-
 // look at: https://github.com/dbankier/vscode-quick-select/blob/master/src/extension.ts
 function toggle() {
+
 	let editor = window.activeTextEditor;
 	let doc = editor.document;
+
+	const chars = getChars(editor);
 
 	const changes: { char: string, selection: Selection }[] = [];
 
 
 	for (const sel of editor.selections) {
 		const content = doc.lineAt(sel.start.line);
-		const charInfo = findChar(content.text, sel);
+		const charInfo = findChar(chars, content.text, sel);
 
 		if (charInfo) {
 			const foundCharIdx = chars.indexOf(charInfo.foundChar);
 			const nextChar = chars[(foundCharIdx + 1) % chars.length];
-			console.log(`found ${charInfo.start} - ${charInfo.end} will change to : ${nextChar}`);
+			// console.log(`found ${charInfo.start} - ${charInfo.end} will change to : ${nextChar}`);
 
 			const first = new Position(sel.start.line, charInfo.start);
 			const firstSelection = new Selection(first, new Position(first.line, first.character + 1));
@@ -74,7 +73,7 @@ function toggle() {
 
 
 /** Find the .start and .end of a char (from the chars list) or null if any side is not found */
-function findChar(txt: string, sel: Selection): { start: number, end: number, foundChar: string } | null {
+function findChar(chars: string[], txt: string, sel: Selection): { start: number, end: number, foundChar: string } | null {
 	let start: number = -1;
 	let end: number = -1;
 
@@ -104,5 +103,24 @@ function findChar(txt: string, sel: Selection): { start: number, end: number, fo
 		return null;
 	}
 
+
+}
+
+
+function getChars(editor: TextEditor) {
+	const doc = editor.document;
+	const langId = doc.languageId;
+
+	let langProps = workspace.getConfiguration().get(`[${langId}]`);
+
+	let chars = null;
+
+	if (langProps) {
+		chars = langProps['togglequotes.chars'];
+	}
+
+	chars = (chars) ? chars : workspace.getConfiguration('togglequotes').get('chars');
+
+	return chars;
 
 }
