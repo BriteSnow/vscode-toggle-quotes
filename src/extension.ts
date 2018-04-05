@@ -66,7 +66,6 @@ function toggle() {
 			edit.replace(change.selection, change.char);
 		}
 	})
-
 }
 
 
@@ -78,25 +77,33 @@ function findChar(chars: string[], txt: string, sel: Selection): { start: number
 	let end: number = -1;
 
 	let foundChar: string = null;
+
 	// find the index of next char from end selection
 	for (let i = sel.end.character; i < txt.length; i++) {
 		const c = txt[i];
-		let idx = chars.indexOf(c);
-		if (idx !== -1) {
-			foundChar = chars[idx];
-			end = i;
-			break;
+		const beforeC = (i > 0) ? txt[i - 1] : null; // the previous character (to see if it is '\')
+		if (beforeC !== '\\') {
+			let idx = chars.indexOf(c);
+			if (idx !== -1) {
+				foundChar = chars[idx];
+				end = i;
+				break;
+			}
 		}
 	}
 
 	// find the index of previous char (note at this point we should have the found char)
 	for (let i = sel.start.character - 1; i > -1; i--) {
 		const c = txt[i];
-		if (foundChar === c) {
-			start = i;
-			break;
+		const beforeC = (i > 0) ? txt[i - 1] : null; // the previous character (to see if it is '\')
+		if (beforeC !== '\\') {
+			if (foundChar === c) {
+				start = i;
+				break;
+			}
 		}
 	}
+
 	if (start > -1 && end > -1) {
 		return { start, end, foundChar };
 	} else {

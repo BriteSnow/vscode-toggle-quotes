@@ -7,10 +7,11 @@ Customizable, see below.
 
 #### Features
 
+- Typescript, JavaScript, Markdown toggles: `"` to `'` to ` 
+- Any other file type toggles: `"` to `'`
 - Works with multi-select.
-- Can make a selection to ignore the text selected (this feature can be used to exclude escaped quotes).
+- Text in selection will be ignored.
 - Per languageId Customization (_new in 0.2.0_)
-
 ```json
 "configurationDefaults": {          
   "[csharp]": {
@@ -18,7 +19,10 @@ Customizable, see below.
   }
 }
 ```
+- [Ignore escaped quotes](https://github.com/BriteSnow/vscode-toggle-quotes/issues/4) (_new in 0.3.0_)
+
 
 #### Upcoming
 
-- Ignore escaped quotes (e.g., `\"`)
+- [Multiline support (#5)](https://github.com/BriteSnow/vscode-toggle-quotes/issues/5)
+- Not sure if suitable: [Escape apostrophes if present (#3)](https://github.com/BriteSnow/vscode-toggle-quotes/issues/3)
