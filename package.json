@@ -2,12 +2,12 @@
     "name": "vscode-toggle-quotes",
     "displayName": "Toggle Quotes",
     "description": "Toggle cycle \" -> ' -> `",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "publisher": "BriteSnow",
     "repository": {
         "type": "git",
         "url": "https://github.com/BriteSnow/vscode-toggle-quotes"
-    },    
+    },
     "engines": {
         "vscode": "^1.17.0"
     },
@@ -25,22 +25,36 @@
             "properties": {
                 "togglequotes.chars": {
                     "type": "array",
-                    
-                    "default": ["\"","'"],
+                    "default": [
+                        "\"",
+                        "'"
+                    ],
                     "description": "Type of quotes to toggle from."
                 }
             }
         },
-        "configurationDefaults": {          
+        "configurationDefaults": {
             "[typescript]": {
-                "togglequotes.chars": ["\"","'","`"]
+                "togglequotes.chars": [
+                    "\"",
+                    "'",
+                    "`"
+                ]
             },
             "[javascript]": {
-                "togglequotes.chars": ["\"","'","`"]
+                "togglequotes.chars": [
+                    "\"",
+                    "'",
+                    "`"
+                ]
             },
             "[markdown]": {
-                "togglequotes.chars": ["\"","'","`"]
-            }                                    
+                "togglequotes.chars": [
+                    "\"",
+                    "'",
+                    "`"
+                ]
+            }
         },
         "commands": [
             {
@@ -62,10 +76,10 @@
         "test": "node ./node_modules/vscode/bin/test"
     },
     "devDependencies": {
-        "typescript": "^2.0.3",
-        "vscode": "^1.0.0",
-        "mocha": "^2.3.3",
+        "@types/mocha": "^5.0.0",
         "@types/node": "^6.0.40",
-        "@types/mocha": "^2.2.32"
+        "mocha": "^5.0.5",
+        "typescript": "^2.8.1",
+        "vscode": "^1.1.14"
     }
 }
