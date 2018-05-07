@@ -1,4 +1,4 @@
-`cmd '` will cycle the first quote pair found (from the start/end of the section) through the following sequence: 
+`cmd '` (`ctrl '` on win/linux) will cycle the first quote pair found (from the start/end of the section) through the following sequence: 
 
 - Typescript, JavaScript, Markdown: `"` to `'` to ` 
 - Any other files: `"` to `'`

@@ -65,7 +65,8 @@
         "keybindings": [
             {
                 "command": "editor.togglequotes",
-                "key": "cmd+'"
+                "key": "ctrl+'",
+                "mac": "cmd+'"
             }
         ]
     },
