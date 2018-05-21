@@ -7,7 +7,7 @@ Customizable, see below.
 
 #### Features
 
-- Typescript, JavaScript, Markdown, JSX (since 0.3.1, thanks to @evaera) toggles: `"` to `'` to ` 
+- Typescript, JavaScript, Markdown, JSX (since 0.3.2, thanks to @evaera) toggles: `"` to `'` to ` 
 - Any other file type toggles: `"` to `'`
 - Works with multi-select.
 - Text in selection will be ignored.
