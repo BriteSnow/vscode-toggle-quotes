@@ -48,6 +48,20 @@
                     "`"
                 ]
             },
+            "[typescriptreact]": {
+                "togglequotes.chars": [
+                    "\"",
+                    "'",
+                    "`"
+                ]
+            },
+            "[javascriptreact]": {
+                "togglequotes.chars": [
+                    "\"",
+                    "'",
+                    "`"
+                ]
+            },
             "[markdown]": {
                 "togglequotes.chars": [
                     "\"",
