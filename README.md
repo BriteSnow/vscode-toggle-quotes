@@ -1,3 +1,7 @@
+<img src="./icon.png" alt="logo" width="120" align="right" />
+
+# Toggle Quotes VSCode Extension
+
 `cmd '` (`ctrl '` on win/linux) will cycle the first quote pair found (from the start/end of the section) through the following sequence: 
 
 - Typescript, JavaScript, Markdown: `"` to `'` to ` 

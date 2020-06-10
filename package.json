@@ -18,6 +18,7 @@
         "onCommand:editor.togglequotes"
     ],
     "main": "./out/src/extension",
+    "icon": "icon.png",
     "contributes": {
         "configuration": {
             "type": "object",
