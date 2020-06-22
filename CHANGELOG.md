@@ -1,7 +1,7 @@
 # Change Log
-All notable changes to the "vscode-toggle-quote" extension will be documented in this file.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+`-` fix, `+` addition, `.` minor, `!` change. 
 
-## [Unreleased]
-- Initial release
+### 0.3.3 June 21 2020
+
+- `+` Added icon (thanks to [@will-stone PR #23](https://github.com/BriteSnow/vscode-toggle-quotes/pull/23))

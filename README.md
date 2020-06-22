@@ -28,5 +28,6 @@ Customizable, see below.
 
 #### Upcoming
 
+- [Add a command "Toggle Quotes: Within", allow to change default (#22)](https://github.com/BriteSnow/vscode-toggle-quotes/issues/22)
 - [Multiline support (#5)](https://github.com/BriteSnow/vscode-toggle-quotes/issues/5)
 - Not sure if suitable: [Escape apostrophes if present (#3)](https://github.com/BriteSnow/vscode-toggle-quotes/issues/3)

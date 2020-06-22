@@ -1,5 +1,10 @@
+# by default ignore .* files/dirs
+.*
+
+# except git ignore
+.gitignore 
+
 out
 node_modules
 
-# best practice, anything starting with ~ is meant to be private
-~*
+.*
