@@ -6,6 +6,7 @@
 
 - Typescript, JavaScript, Markdown: `"` to `'` to ` 
 - Any other files: `"` to `'`
+- Also available different start and end of wrap characters: `<`/`>`, `[`/`]`, `«`/`»` etc.
 
 Customizable, see below.
 

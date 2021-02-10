@@ -27,13 +27,22 @@ export function activate(context: ExtensionContext) {
 export function deactivate() {
 }
 
+type Quotes = { begin: string, end: string };
+
 // look at: https://github.com/dbankier/vscode-quick-select/blob/master/src/extension.ts
 function toggle() {
 
 	let editor = window.activeTextEditor;
 	let doc = editor.document;
 
-	const chars = getChars(editor);
+	let chars = [];
+
+	try {
+		chars = getChars(editor);
+	} catch (e) {
+		window.showErrorMessage(e.message);
+		return;
+	}
 
 	const changes: { char: string, selection: Selection }[] = [];
 
@@ -43,17 +52,17 @@ function toggle() {
 		const charInfo = findChar(chars, content.text, sel);
 
 		if (charInfo) {
-			const foundCharIdx = chars.indexOf(charInfo.foundChar);
+			const foundCharIdx = chars.indexOf(charInfo.foundQuotes);
 			const nextChar = chars[(foundCharIdx + 1) % chars.length];
 			// console.log(`found ${charInfo.start} - ${charInfo.end} will change to : ${nextChar}`);
 
 			const first = new Position(sel.start.line, charInfo.start);
 			const firstSelection = new Selection(first, new Position(first.line, first.character + 1));
-			changes.push({ char: nextChar, selection: firstSelection });
+			changes.push({ char: nextChar.begin, selection: firstSelection });
 
 			const second = new Position(sel.start.line, charInfo.end);
 			const secondSelection = new Selection(second, new Position(second.line, second.character + 1));
-			changes.push({ char: nextChar, selection: secondSelection });
+			changes.push({ char: nextChar.end, selection: secondSelection });
 		}
 
 		// for (const sel of newSelections){
@@ -72,20 +81,19 @@ function toggle() {
 
 
 /** Find the .start and .end of a char (from the chars list) or null if any side is not found */
-function findChar(chars: string[], txt: string, sel: Selection): { start: number, end: number, foundChar: string } | null {
+function findChar(chars: Quotes[], txt: string, sel: Selection): { start: number, end: number, foundQuotes: Quotes } | null {
 	let start: number = -1;
 	let end: number = -1;
 
-	let foundChar: string = null;
+	let foundQuotes: Quotes = null;
 
 	// find the index of next char from end selection
 	for (let i = sel.end.character; i < txt.length; i++) {
 		const c = txt[i];
 		const beforeC = (i > 0) ? txt[i - 1] : null; // the previous character (to see if it is '\')
 		if (beforeC !== '\\') {
-			let idx = chars.indexOf(c);
-			if (idx !== -1) {
-				foundChar = chars[idx];
+			foundQuotes = chars.find((quotes) => quotes.end === c);
+			if (foundQuotes) {
 				end = i;
 				break;
 			}
@@ -97,7 +105,7 @@ function findChar(chars: string[], txt: string, sel: Selection): { start: number
 		const c = txt[i];
 		const beforeC = (i > 0) ? txt[i - 1] : null; // the previous character (to see if it is '\')
 		if (beforeC !== '\\') {
-			if (foundChar === c) {
+			if (foundQuotes.begin === c) {
 				start = i;
 				break;
 			}
@@ -105,7 +113,7 @@ function findChar(chars: string[], txt: string, sel: Selection): { start: number
 	}
 
 	if (start > -1 && end > -1) {
-		return { start, end, foundChar };
+		return { start, end, foundQuotes };
 	} else {
 		return null;
 	}
@@ -114,7 +122,7 @@ function findChar(chars: string[], txt: string, sel: Selection): { start: number
 }
 
 
-function getChars(editor: TextEditor) {
+function getChars(editor: TextEditor): Quotes[] {
 	const doc = editor.document;
 	const langId = doc.languageId;
 
@@ -126,7 +134,25 @@ function getChars(editor: TextEditor) {
 		chars = langProps['togglequotes.chars'];
 	}
 
-	chars = (chars) ? chars : workspace.getConfiguration('togglequotes').get('chars');
+	chars = chars || workspace.getConfiguration('togglequotes').get('chars') || [];
+
+	// Transform properties to begin/end pair
+	chars.forEach((char: any, i: number, chars: any[]) => {
+		if (typeof char === 'string') {
+			chars[i] = { begin: char, end: char };
+		} else if (typeof char === 'object') {
+			if (Array.isArray(char)) {
+				if (char.length !== 2 || !char.every(c => typeof c === 'string')) {
+					throw Error('Wrong togglequotes.chars array quotes pair format. Use ["<", ">"]');
+				}
+				chars[i] = { begin: char[0], end: char[1] };
+			} else if (!char.begin || !char.end) {
+				throw Error('Wrong togglequotes.chars object quotes pair format. Use { "begin": "<", "end": ">" } ');
+			}
+		} else {
+			throw Error('Wrong togglequotes.chars value type. Use string or [string, string] or { "begin": string, "end": string }');
+		}
+	});
 
 	return chars;
 
