@@ -6,11 +6,11 @@
 
 - Typescript, JavaScript, Markdown: `"` to `'` to ` 
 - Any other files: `"` to `'`
-- Also available different start and end of wrap characters: `<`/`>`, `[`/`]`, `«`/`»` etc.
+- Also available different start and end of wrap characters: `<`/`>`, `[`/`]`, `«`/`»` etc. (thanks to [@dirondin](https://github.com/dirondin) )
 
 Customizable, see below.
 
-#### Features
+### Features
 
 - Typescript, JavaScript, Markdown, JSX (since 0.3.2, thanks to @evaera) toggles: `"` to `'` to ` 
 - Any other file type toggles: `"` to `'`
@@ -21,14 +21,22 @@ Customizable, see below.
 "configurationDefaults": {          
   "[csharp]": {
     "togglequotes.chars": ["\"","'","`"]
+  },
+  "[freemarker]": {
+    "togglequotes.chars": [["<",">"],["[","]"]]
   }
 }
 ```
 - [Ignore escaped quotes](https://github.com/BriteSnow/vscode-toggle-quotes/issues/4) (_new in 0.3.0_)
 
 
-#### Upcoming
+### Upcoming
 
 - [Add a command "Toggle Quotes: Within", allow to change default (#22)](https://github.com/BriteSnow/vscode-toggle-quotes/issues/22)
 - [Multiline support (#5)](https://github.com/BriteSnow/vscode-toggle-quotes/issues/5)
 - Not sure if suitable: [Escape apostrophes if present (#3)](https://github.com/BriteSnow/vscode-toggle-quotes/issues/3)
+
+### Credits
+
+- [@dirondin](https://github.com/dirondin) - for the start and end wrap characters support
+- [@will-stone](https://github.com/will-stone) - for the icon
