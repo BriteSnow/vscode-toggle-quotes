@@ -2,7 +2,7 @@
     "name": "vscode-toggle-quotes",
     "displayName": "Toggle Quotes",
     "description": "Toggle cycle \" -> ' -> `",
-    "version": "0.3.3",
+    "version": "0.3.4",
     "publisher": "BriteSnow",
     "license": "MIT",
     "repository": {
@@ -99,5 +99,4 @@
         "typescript": "^4.1.5",
         "vscode": "^1.1.17"
     }
-    
 }
