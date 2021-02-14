@@ -40,3 +40,7 @@ Customizable, see below.
 
 - [@dirondin](https://github.com/dirondin) - for the start and end wrap characters support
 - [@will-stone](https://github.com/will-stone) - for the icon
+
+### Self-centered promotion
+
+- [Big App, Small Team YouTube Channel](https://www.youtube.com/jeremychone). New dev channel about #**RuntimeFirst** code-design approaches (v.s., Framework centric approaches). Starting with some Native Web Components best practices (v.s., React, Angular), and will eventually cover full-stack development and DevOps with simple and scalable best practices for Node.js, docker, and Kubernetes. #SimpleScalesBetter (feedback welcome on YouTube videos or [Big App, Small Team, discord server](https://discord.com/channels/808391200309772339/808391200309772343))
