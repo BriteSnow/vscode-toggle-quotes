@@ -48,115 +48,29 @@ function toggle() {
 
 	for (const sel of editor.selections) {
 		const content = doc.lineAt(sel.start.line);
-		// console.log('editor:', editor.document.getWordRangeAtPosition(sel.start, /'[\s\S]*'/gi))
 		const text = editor.document.getText()
-		// console.log('editor:', text.slice(sel.start.character-4, sel.start.character+4))
-		// console.log('sel.start:', sel.start)
-
-		const ast = {}
-		let numLines = 0
+		const [ast, numLines] = buildAST(text)
+		const [startPos, startDelimiter] = getStartQuote(ast, sel)
+		const [endPos, endDelimiter] = getEndQuote(ast, sel, numLines)
 		
-		function buildAST() {
-			const text = editor.document.getText()
-			const lines = text.split(/(?<=\r?\n)/g)
-
-			lines.forEach((l, i) => {
-				ast[i] = {
-					line: l,
-					length: l.length
-				}
-				numLines = i
-			})
-		}
-		buildAST()
-		console.log('ast:', ast)
-		
-		function getStartQuote() {
-			const initial = {
-				line: sel.start.line,
-				column: sel.start.character
-			}
-			const pos = { ...initial }
-			
-			for (let i = initial.column, j = 0; i >= 0; i--, j++) {
-				if (pos.line <= 0 && pos.column <= 0) {
-					return "EOF"
-				}
-				
-				const char = ast[pos.line].line[pos.column] === "\n" ? "\\n" : ast[pos.line].line[pos.column]
-								
-				// TODO: Make break on char dynamic
-				if(char === "'" && j !== 0) break
-				
-				pos.column -= 1
-				
-				if (pos.column < 0) {
-					pos.line -= 1
-					pos.column = ast[pos.line].length
-					i = pos.column + 1
-					if (pos.line < 0) {
-						return "EOF"
-					}
-				}
-			}
-			return pos
-		}
-	
-		function getEndQuote() {
-			const initial = {
-				line: sel.start.line,
-				column: sel.start.character
-			}
-			const pos = { ...initial }
-			
-			for (let i = initial.column, j = 0; i >= 0; i++, j++) {
-				const char = ast[pos.line].line[pos.column] === "\n" ? "\\n" : ast[pos.line].line[pos.column]
-
-				// TODO: Make break on char dynamic
-				if(char === "'") break
-	
-				pos.column += 1
-
-				if (pos.column > ast[pos.line].length) {
-					pos.line += 1
-					pos.column = 0
-					i = pos.column
-					if (pos.line > numLines) {
-						return "EOF"
-					}
-				}
-			}
-			return pos
-		}
-		
-
-		const quotePos = {
-			start: getStartQuote(),
-			end: getEndQuote(),
-		}
-		console.log('quotePos:', quotePos)
-		console.log(getStartQuote())
-		console.log(getEndQuote())
+		if (startPos === "EOF" || endPos === "EOF") return
 
 		const charInfo = findChar(chars, content.text, sel);
+		console.log('charInfo:', charInfo)
 
 		if (charInfo) {
 			const foundCharIdx = chars.indexOf(charInfo.foundQuotes);
 			const nextChar = chars[(foundCharIdx + 1) % chars.length];
-			// console.log(`found ${charInfo.start} - ${charInfo.end} will change to : ${nextChar}`);
+			console.log(`found ${charInfo.start} - ${charInfo.end} will change to :\n${JSON.stringify(nextChar, null, 2)}`);
 
-			const first = new Position(sel.start.line, charInfo.start);
+			const first = new Position(startPos.line, startPos.column);
 			const firstSelection = new Selection(first, new Position(first.line, first.character + 1));
 			changes.push({ char: nextChar.begin, selection: firstSelection });
 
-			const second = new Position(sel.start.line, charInfo.end);
+			const second = new Position(endPos.line, endPos.column);
 			const secondSelection = new Selection(second, new Position(second.line, second.character + 1));
 			changes.push({ char: nextChar.end, selection: secondSelection });
 		}
-
-		// for (const sel of newSelections){
-		// 	editor
-		// }
 	}
 
 	editor.edit((edit) => {
@@ -165,7 +79,6 @@ function toggle() {
 		}
 	})
 }
-
 
 
 
@@ -206,9 +119,8 @@ function findChar(chars: Quotes[], txt: string, sel: Selection): { start: number
 	} else {
 		return null;
 	}
-
-
 }
+
 
 
 function getChars(editor: TextEditor): Quotes[] {
@@ -244,5 +156,101 @@ function getChars(editor: TextEditor): Quotes[] {
 	});
 
 	return chars;
+}
 
+
+
+function buildAST(text) {
+	const ast = {}
+	const lines = text.split(/(?<=\r?\n)/g)
+
+	let numLines = 0
+	
+	lines.forEach((l, i) => {
+		ast[i] = {
+			line: l,
+			length: l.length
+		}
+		numLines = i
+	})
+	return [ast, numLines]
+}
+
+
+
+function getStartQuote(ast, sel) {
+	const initial = {
+		line: sel.start.line,
+		column: sel.start.character
+	}
+	const pos = { ...initial }
+	let delimiter
+	
+	for (let i = initial.column, j = 0; i >= 0; i--, j++) {
+		if (pos.line <= 0 && pos.column <= 0) {
+			return "EOF"
+		}
+
+		const char = ast[pos.line].line[pos.column]
+		const prevChar = ast[pos.line].line[pos.column - 1]
+		
+		if (prevChar === "\\") {
+			pos.column -= 2
+			continue
+		}
+		
+		if (char === "'" || char === "\"" || char === "`") {
+			delimiter = char
+			break
+		}
+		
+		pos.column -= 1
+		
+		if (pos.column < 0) {
+			pos.line -= 1
+			pos.column = ast[pos.line].length
+			i = pos.column + 1
+			if (pos.line < 0) {
+				return ["EOF", ""]
+			}
+		}
+	}
+	return [pos, delimiter]
+}
+
+
+
+function getEndQuote(ast, sel, numLines) {
+	const initial = {
+		line: sel.start.line,
+		column: sel.start.character
+	}
+	const pos = { ...initial }
+	let delimiter
+	
+	for (let i = initial.column, j = 0; i >= 0; i++, j++) {
+		const char = ast[pos.line].line[pos.column]
+		
+		if (char === "\\") {
+			pos.column += 2
+			continue
+		}
+	
+		if (char === "'" || char === "\"" || char === "`") {
+			delimiter = char
+			break
+		}
+
+		pos.column += 1
+
+		if (pos.column > ast[pos.line].length) {
+			pos.line += 1
+			pos.column = 0
+			i = pos.column
+			if (pos.line > numLines) {
+				return ["EOF", ""]
+			}
+		}
+	}
+	return [pos, delimiter]
 }
