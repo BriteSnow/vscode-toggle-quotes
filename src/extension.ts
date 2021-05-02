@@ -54,6 +54,7 @@ function toggle() {
 		// console.log('sel.start:', sel.start)
 
 		const ast = {}
+		let numLines = 0
 		
 		function buildAST() {
 			const text = editor.document.getText()
@@ -64,6 +65,7 @@ function toggle() {
 					line: l,
 					length: l.length
 				}
+				numLines = i
 			})
 		}
 		buildAST()
@@ -75,84 +77,66 @@ function toggle() {
 				column: sel.start.character
 			}
 			const pos = { ...initial }
-			const text = ast[initial.line].line
-			const startChar = text[initial.column]
-			
-			console.log('initial:', initial)
-			console.log('startChar:', startChar === "\n" ? "\\n" : startChar)
-			
 			
 			for (let i = initial.column, j = 0; i >= 0; i--, j++) {
-				console.log('pos.column:', pos.column)
-				console.log('pos.line:', pos.line)
-				const char = ast[pos.line].line[pos.column] === "\n" ? "\\n" : ast[pos.line].line[pos.column]
-				console.log('char:', char)
-
-				if(char === "'") {
-					console.log('break', char)
-					break
+				if (pos.line <= 0 && pos.column <= 0) {
+					return "EOF"
 				}
 				
-				// Avoids decrementing the line number if the startChar is a newline char
-				// console.log('match:', text[i]?.match(/\r?\n/g))
-				// console.log('j !== 0:', j !== 0)
-				// console.log('both:', text[i]?.match(/\r?\n/g)?.length === 1 && j !== 0)
-				// const skipFirst = j !== 0 && startChar?.match(/\r?\n/g)?.length === 1
-				// console.log('skipFirst:', skipFirst)
-				// if (text[i]?.match(/\r?\n/g)?.length === 1 && skipFirst) {
-				// 	pos.line -= 1
-				// 	pos.column = ast[pos.line].length - 1
-				// 	i = ast[pos.line].length - 1
-				// 	console.log('continue.line:', pos.line)
-				// 	console.log('continue.column:', pos.column)
-				// 	continue
-				// }
+				const char = ast[pos.line].line[pos.column] === "\n" ? "\\n" : ast[pos.line].line[pos.column]
+								
+				// TODO: Make break on char dynamic
+				if(char === "'" && j !== 0) break
 				
 				pos.column -= 1
 				
 				if (pos.column < 0) {
 					pos.line -= 1
 					pos.column = ast[pos.line].length
-					i = pos.column
+					i = pos.column + 1
 					if (pos.line < 0) {
 						return "EOF"
 					}
 				}
-				
-				console.log("----------------")
-
 			}
 			return pos
 		}
-		const start = getStartQuote()
-		console.log('start:', start)
 	
-		// function getEndQuote() {
-		// 	const initial = {
-		// 		line: sel.start.line,
-		// 		character: sel.start.character
-		// 	}
-		// 	const pos = { ...initial }
-		// 	const text = editor.document.getText()
+		function getEndQuote() {
+			const initial = {
+				line: sel.start.line,
+				column: sel.start.character
+			}
+			const pos = { ...initial }
 			
-		// 	for (let i = sel.start.character; i > 0; i++){
-		// 		if(text[i] === "'") {
-		// 			break
-		// 		}
+			for (let i = initial.column, j = 0; i >= 0; i++, j++) {
+				const char = ast[pos.line].line[pos.column] === "\n" ? "\\n" : ast[pos.line].line[pos.column]
 
-		// 		pos.character += 1
+				// TODO: Make break on char dynamic
+				if(char === "'") break
+	
+				pos.column += 1
 
-		// 		if(text[i] === "\n" || text[i] === "\r") {
-		// 			pos.line += 1
-		// 			pos.character = 0
-		// 		}
+				if (pos.column > ast[pos.line].length) {
+					pos.line += 1
+					pos.column = 0
+					i = pos.column
+					if (pos.line > numLines) {
+						return "EOF"
+					}
+				}
+			}
+			return pos
+		}
+		
 
-		// 		continue
-		// 	}
-		// 	return pos
-		// }
-		// const end = getEndQuote()
-		// console.log('end:', end)
+		const quotePos = {
+			start: getStartQuote(),
+			end: getEndQuote(),
+		}
+		console.log('quotePos:', quotePos)
+		console.log(getStartQuote())
+		console.log(getEndQuote())
 
 		const charInfo = findChar(chars, content.text, sel);
 
