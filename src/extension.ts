@@ -32,13 +32,14 @@ type Quotes = { begin: string, end: string };
 // look at: https://github.com/dbankier/vscode-quick-select/blob/master/src/extension.ts
 function toggle() {
 	let editor = window.activeTextEditor;
-	let doc = editor.document;
-
-	let chars = [];
+	let chars: Quotes[] = [];
 	
 	try {
-		// File extension specific delimiters (package.json configurationDefaults)
-		chars = getChars(editor);
+		// File extension specific delimiters (package.json contributes.configurationDefaults)
+		let [charsInfo, status] = getChars(editor);
+		// Early return for unsupported file types
+		if (status === "UNSUPPORTED_FILE_TYPE") return
+		chars = charsInfo
 	} catch (e) {
 		window.showErrorMessage(e.message);
 		return;
@@ -47,7 +48,6 @@ function toggle() {
 	const changes: { char: string, selection: Selection }[] = [];
 
 	for (const sel of editor.selections) {
-		const content = doc.lineAt(sel.start.line);
 		const text = editor.document.getText()
 		const [ast, numLines] = buildAST(text)
 		const [startPos, startDelimiter] = getStartQuote(ast, sel)
@@ -55,13 +55,12 @@ function toggle() {
 		
 		if (startPos === "EOF" || endPos === "EOF") return
 
-		const charInfo = findChar(chars, content.text, sel);
-		console.log('charInfo:', charInfo)
+		const charInfo = findChar(chars, startDelimiter, endDelimiter);
 
 		if (charInfo) {
-			const foundCharIdx = chars.indexOf(charInfo.foundQuotes);
+			const foundCharIdx = chars.indexOf(charInfo);
 			const nextChar = chars[(foundCharIdx + 1) % chars.length];
-			console.log(`found ${charInfo.start} - ${charInfo.end} will change to :\n${JSON.stringify(nextChar, null, 2)}`);
+			// console.log(`begin: Found ${startDelimiter} at line ${startPos.line} column ${startPos.column}\nend: Found ${endDelimiter} at line ${endPos.line} column ${endPos.column}\nwill change to :\n${JSON.stringify(nextChar, null, 2)}`);
 
 			const first = new Position(startPos.line, startPos.column);
 			const firstSelection = new Selection(first, new Position(first.line, first.character + 1));
@@ -82,52 +81,14 @@ function toggle() {
 
 
 
-/** Find the .start and .end of a char (from the chars list) or null if any side is not found */
-function findChar(chars: Quotes[], txt: string, sel: Selection): { start: number, end: number, foundQuotes: Quotes } | null {
-	let start: number = -1;
-	let end: number = -1;
-
-	let foundQuotes: Quotes = null;
-
-	// find the index of next char from end selection
-	for (let i = sel.end.character; i < txt.length; i++) {
-		const c = txt[i];
-		const beforeC = (i > 0) ? txt[i - 1] : null; // the previous character (to see if it is '\')
-		if (beforeC !== '\\') {
-			foundQuotes = chars.find((quotes) => quotes.end === c);
-			if (foundQuotes) {
-				end = i;
-				break;
-			}
-		}
-	}
-
-	// find the index of previous char (note at this point we should have the found char)
-	for (let i = sel.start.character - 1; i > -1; i--) {
-		const c = txt[i];
-		const beforeC = (i > 0) ? txt[i - 1] : null; // the previous character (to see if it is '\')
-		if (beforeC !== '\\') {
-			if (foundQuotes.begin === c) {
-				start = i;
-				break;
-			}
-		}
-	}
-
-	if (start > -1 && end > -1) {
-		return { start, end, foundQuotes };
-	} else {
-		return null;
-	}
-}
-
-
-
-function getChars(editor: TextEditor): Quotes[] {
+function getChars(editor: TextEditor): [Quotes[], string] {
 	const doc = editor.document;
 	const langId = doc.languageId;
 
 	let langProps = workspace.getConfiguration().get(`[${langId}]`);
+	if (!!langProps === false) {
+		return [[], "UNSUPPORTED_FILE_TYPE"]
+	}
 
 	let chars = null;
 
@@ -155,7 +116,19 @@ function getChars(editor: TextEditor): Quotes[] {
 		}
 	});
 
-	return chars;
+	return [chars, ""];
+}
+
+
+
+/** Find the .start and .end of a char (from the chars list) or null if any side is not found */
+function findChar(chars: Quotes[], startDelimiter: string, endDelimiter: string): Quotes {
+	let foundQuotes: Quotes = null;
+
+	foundQuotes = chars.find((quotes) => quotes.begin === startDelimiter);
+	foundQuotes = chars.find((quotes) => quotes.end === endDelimiter);
+
+	return foundQuotes;
 }
 
 
@@ -192,16 +165,15 @@ function getStartQuote(ast, sel) {
 		}
 
 		const char = ast[pos.line].line[pos.column]
-		const prevChar = ast[pos.line].line[pos.column - 1]
-		
-		if (prevChar === "\\") {
-			pos.column -= 2
-			continue
-		}
-		
+				
 		if (char === "'" || char === "\"" || char === "`") {
-			delimiter = char
-			break
+			// Eat escaped quote
+			if (ast[pos.line].line[pos.column - 1] === "\\") {
+				pos.column -= 2
+			} else {
+				delimiter = char
+				break
+			}
 		}
 		
 		pos.column -= 1
@@ -231,9 +203,9 @@ function getEndQuote(ast, sel, numLines) {
 	for (let i = initial.column, j = 0; i >= 0; i++, j++) {
 		const char = ast[pos.line].line[pos.column]
 		
+		// Eat escaped quote
 		if (char === "\\") {
 			pos.column += 2
-			continue
 		}
 	
 		if (char === "'" || char === "\"" || char === "`") {
