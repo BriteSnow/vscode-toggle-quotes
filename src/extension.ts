@@ -31,24 +31,129 @@ type Quotes = { begin: string, end: string };
 
 // look at: https://github.com/dbankier/vscode-quick-select/blob/master/src/extension.ts
 function toggle() {
-
 	let editor = window.activeTextEditor;
 	let doc = editor.document;
 
 	let chars = [];
-
+	
 	try {
+		// File extension specific delimiters (package.json configurationDefaults)
 		chars = getChars(editor);
 	} catch (e) {
 		window.showErrorMessage(e.message);
 		return;
 	}
-
+	
 	const changes: { char: string, selection: Selection }[] = [];
-
 
 	for (const sel of editor.selections) {
 		const content = doc.lineAt(sel.start.line);
+		// console.log('editor:', editor.document.getWordRangeAtPosition(sel.start, /'[\s\S]*'/gi))
+		const text = editor.document.getText()
+		// console.log('editor:', text.slice(sel.start.character-4, sel.start.character+4))
+		// console.log('sel.start:', sel.start)
+
+		const ast = {}
+		
+		function buildAST() {
+			const text = editor.document.getText()
+			const lines = text.split(/(?<=\r?\n)/g)
+
+			lines.forEach((l, i) => {
+				ast[i] = {
+					line: l,
+					length: l.length
+				}
+			})
+		}
+		buildAST()
+		console.log('ast:', ast)
+		
+		function getStartQuote() {
+			const initial = {
+				line: sel.start.line,
+				column: sel.start.character
+			}
+			const pos = { ...initial }
+			const text = ast[initial.line].line
+			const startChar = text[initial.column]
+			
+			console.log('initial:', initial)
+			console.log('startChar:', startChar === "\n" ? "\\n" : startChar)
+			
+			
+			for (let i = initial.column, j = 0; i >= 0; i--, j++) {
+				console.log('pos.column:', pos.column)
+				console.log('pos.line:', pos.line)
+				const char = ast[pos.line].line[pos.column] === "\n" ? "\\n" : ast[pos.line].line[pos.column]
+				console.log('char:', char)
+
+				if(char === "'") {
+					console.log('break', char)
+					break
+				}
+				
+				// Avoids decrementing the line number if the startChar is a newline char
+				// console.log('match:', text[i]?.match(/\r?\n/g))
+				// console.log('j !== 0:', j !== 0)
+				// console.log('both:', text[i]?.match(/\r?\n/g)?.length === 1 && j !== 0)
+				// const skipFirst = j !== 0 && startChar?.match(/\r?\n/g)?.length === 1
+				// console.log('skipFirst:', skipFirst)
+				// if (text[i]?.match(/\r?\n/g)?.length === 1 && skipFirst) {
+				// 	pos.line -= 1
+				// 	pos.column = ast[pos.line].length - 1
+				// 	i = ast[pos.line].length - 1
+				// 	console.log('continue.line:', pos.line)
+				// 	console.log('continue.column:', pos.column)
+				// 	continue
+				// }
+				
+				pos.column -= 1
+				
+				if (pos.column < 0) {
+					pos.line -= 1
+					pos.column = ast[pos.line].length
+					i = pos.column
+					if (pos.line < 0) {
+						return "EOF"
+					}
+				}
+				
+				console.log("----------------")
+
+			}
+			return pos
+		}
+		const start = getStartQuote()
+		console.log('start:', start)
+	
+		// function getEndQuote() {
+		// 	const initial = {
+		// 		line: sel.start.line,
+		// 		character: sel.start.character
+		// 	}
+		// 	const pos = { ...initial }
+		// 	const text = editor.document.getText()
+			
+		// 	for (let i = sel.start.character; i > 0; i++){
+		// 		if(text[i] === "'") {
+		// 			break
+		// 		}
+
+		// 		pos.character += 1
+
+		// 		if(text[i] === "\n" || text[i] === "\r") {
+		// 			pos.line += 1
+		// 			pos.character = 0
+		// 		}
+
+		// 		continue
+		// 	}
+		// 	return pos
+		// }
+		// const end = getEndQuote()
+		// console.log('end:', end)
+
 		const charInfo = findChar(chars, content.text, sel);
 
 		if (charInfo) {
