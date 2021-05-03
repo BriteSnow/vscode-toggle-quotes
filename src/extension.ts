@@ -158,7 +158,6 @@ function getStartQuote(ast, sel) {
 	};
 
 	let delimiter;
-	let skipDlCheck = false;
 
 	for (let i = pos.column, j = 0; i >= 0; i--, j++) {
 		if (pos.line <= 0 && pos.column <= 0) {
@@ -166,20 +165,30 @@ function getStartQuote(ast, sel) {
 		}
 
 		const char = ast[pos.line].line[pos.column];
+		const nextChar = ast[pos.line].line[pos.column - 1];
 
 		// Eat escaped quote
-		if (ast[pos.line].line[pos.column - 1] === '\\') {
+		if (nextChar === '\\') {
 			pos.column -= 1;
-			skipDlCheck = true;
+			continue;
 		}
 
-		if (!skipDlCheck) {
-			if (char === "'" || char === '"' || char === '`') {
+		switch (char) {
+			case "'":
+				// Eat apostrophes
+				if (nextChar && !nextChar.match(/\w/)) {
+					delimiter = char;
+				}
+				break;
+			case '"':
 				delimiter = char;
 				break;
-			}
+			case '`':
+				delimiter = char;
+				break;
 		}
-		skipDlCheck = false;
+
+		if (delimiter) break;
 
 		pos.column -= 1;
 
