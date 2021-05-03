@@ -158,6 +158,7 @@ function getStartQuote(ast, sel) {
 	}
 	const pos = { ...initial }
 	let delimiter
+	let skipDlCheck = false
 	
 	for (let i = initial.column, j = 0; i >= 0; i--, j++) {
 		if (pos.line <= 0 && pos.column <= 0) {
@@ -165,16 +166,20 @@ function getStartQuote(ast, sel) {
 		}
 
 		const char = ast[pos.line].line[pos.column]
-				
-		if (char === "'" || char === "\"" || char === "`") {
-			// Eat escaped quote
-			if (ast[pos.line].line[pos.column - 1] === "\\") {
-				pos.column -= 2
-			} else {
-				delimiter = char
-				break
+
+		// Eat escaped quote
+		if (ast[pos.line].line[pos.column - 1] === "\\") {
+			pos.column -= 1
+			skipDlCheck = true
+		} 
+		
+		if (!skipDlCheck) {
+			if (char === "'" || char === "\"" || char === "`") {
+					delimiter = char
+					break
 			}
 		}
+		skipDlCheck = false
 		
 		pos.column -= 1
 		
@@ -199,19 +204,24 @@ function getEndQuote(ast, sel, numLines) {
 	}
 	const pos = { ...initial }
 	let delimiter
+	let skipDlCheck = false
 	
 	for (let i = initial.column, j = 0; i >= 0; i++, j++) {
 		const char = ast[pos.line].line[pos.column]
 		
 		// Eat escaped quote
 		if (char === "\\") {
-			pos.column += 2
+			pos.column += 1
+			skipDlCheck = true
 		}
 	
-		if (char === "'" || char === "\"" || char === "`") {
-			delimiter = char
-			break
+		if (!skipDlCheck) {
+			if (char === "'" || char === "\"" || char === "`") {
+				delimiter = char
+				break
+			}
 		}
+		skipDlCheck = false
 
 		pos.column += 1
 
