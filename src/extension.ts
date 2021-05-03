@@ -152,15 +152,15 @@ function buildAST(text) {
 
 
 function getStartQuote(ast, sel) {
-	const initial = {
+	const pos = {
 		line: sel.start.line,
 		column: sel.start.character,
 	};
-	const pos = { ...initial };
+
 	let delimiter;
 	let skipDlCheck = false;
 
-	for (let i = initial.column, j = 0; i >= 0; i--, j++) {
+	for (let i = pos.column, j = 0; i >= 0; i--, j++) {
 		if (pos.line <= 0 && pos.column <= 0) {
 			return 'EOF';
 		}
@@ -175,8 +175,8 @@ function getStartQuote(ast, sel) {
 
 		if (!skipDlCheck) {
 			if (char === "'" || char === '"' || char === '`') {
-					delimiter = char;
-					break;
+				delimiter = char;
+				break;
 			}
 		}
 		skipDlCheck = false;
@@ -198,30 +198,37 @@ function getStartQuote(ast, sel) {
 
 
 function getEndQuote(ast, sel, numLines) {
-	const initial = {
+	const pos = {
 		line: sel.start.line,
 		column: sel.start.character,
 	};
-	const pos = { ...initial };
+
 	let delimiter;
-	let skipDlCheck = false;
 
-	for (let i = initial.column, j = 0; i >= 0; i++, j++) {
+	for (let i = pos.column, j = 0; i >= 0; i++, j++) {
 		const char = ast[pos.line].line[pos.column];
+		const nextChar = ast[pos.line].line[pos.column + 1];
 
-		// Eat escaped quote
-		if (char === '\\') {
-			pos.column += 1;
-			skipDlCheck = true;
-		}
-
-		if (!skipDlCheck) {
-			if (char === "'" || char === '"' || char === '`') {
+		switch (char) {
+			case '\\':
+				// Eat escaped quote
+				pos.column += 1;
+				break;
+			case "'":
+				// Eat apostrophes
+				if (nextChar && !nextChar.match(/\w/)) {
+					delimiter = char;
+				}
+				break;
+			case '"':
 				delimiter = char;
 				break;
-			}
+			case '`':
+				delimiter = char;
+				break;
 		}
-		skipDlCheck = false;
+
+		if (delimiter) break;
 
 		pos.column += 1;
 
