@@ -33,27 +33,27 @@ type Quotes = { begin: string, end: string };
 function toggle() {
 	let editor = window.activeTextEditor;
 	let chars: Quotes[] = [];
-	
+
 	try {
 		// File extension specific delimiters (package.json contributes.configurationDefaults)
 		let [charsInfo, status] = getChars(editor);
 		// Early return for unsupported file types
-		if (status === "UNSUPPORTED_FILE_TYPE") return
-		chars = charsInfo
+		if (status === 'UNSUPPORTED_FILE_TYPE') return;
+		chars = charsInfo;
 	} catch (e) {
 		window.showErrorMessage(e.message);
 		return;
 	}
-	
+
 	const changes: { char: string, selection: Selection }[] = [];
 
 	for (const sel of editor.selections) {
-		const text = editor.document.getText()
-		const [ast, numLines] = buildAST(text)
-		const [startPos, startDelimiter] = getStartQuote(ast, sel)
-		const [endPos, endDelimiter] = getEndQuote(ast, sel, numLines)
-		
-		if (startPos === "EOF" || endPos === "EOF") return
+		const text = editor.document.getText();
+		const [ast, numLines] = buildAST(text);
+		const [startPos, startDelimiter] = getStartQuote(ast, sel);
+		const [endPos, endDelimiter] = getEndQuote(ast, sel, numLines);
+
+		if (startPos === 'EOF' || endPos === 'EOF') return;
 
 		const charInfo = findChar(chars, startDelimiter, endDelimiter);
 
@@ -76,7 +76,7 @@ function toggle() {
 		for (const change of changes) {
 			edit.replace(change.selection, change.char);
 		}
-	})
+	});
 }
 
 
@@ -87,7 +87,7 @@ function getChars(editor: TextEditor): [Quotes[], string] {
 
 	let langProps = workspace.getConfiguration().get(`[${langId}]`);
 	if (!!langProps === false) {
-		return [[], "UNSUPPORTED_FILE_TYPE"]
+		return [[], 'UNSUPPORTED_FILE_TYPE'];
 	}
 
 	let chars = null;
@@ -116,7 +116,7 @@ function getChars(editor: TextEditor): [Quotes[], string] {
 		}
 	});
 
-	return [chars, ""];
+	return [chars, ''];
 }
 
 
@@ -134,19 +134,19 @@ function findChar(chars: Quotes[], startDelimiter: string, endDelimiter: string)
 
 
 function buildAST(text) {
-	const ast = {}
-	const lines = text.split(/(?<=\r?\n)/g)
+	const ast = {};
+	const lines = text.split(/(?<=\r?\n)/g);
 
-	let numLines = 0
-	
+	let numLines = 0;
+
 	lines.forEach((l, i) => {
 		ast[i] = {
 			line: l,
-			length: l.length
-		}
-		numLines = i
-	})
-	return [ast, numLines]
+			length: l.length,
+		};
+		numLines = i;
+	});
+	return [ast, numLines];
 }
 
 
@@ -154,45 +154,45 @@ function buildAST(text) {
 function getStartQuote(ast, sel) {
 	const initial = {
 		line: sel.start.line,
-		column: sel.start.character
-	}
-	const pos = { ...initial }
-	let delimiter
-	let skipDlCheck = false
-	
+		column: sel.start.character,
+	};
+	const pos = { ...initial };
+	let delimiter;
+	let skipDlCheck = false;
+
 	for (let i = initial.column, j = 0; i >= 0; i--, j++) {
 		if (pos.line <= 0 && pos.column <= 0) {
-			return "EOF"
+			return 'EOF';
 		}
 
-		const char = ast[pos.line].line[pos.column]
+		const char = ast[pos.line].line[pos.column];
 
 		// Eat escaped quote
-		if (ast[pos.line].line[pos.column - 1] === "\\") {
-			pos.column -= 1
-			skipDlCheck = true
-		} 
-		
+		if (ast[pos.line].line[pos.column - 1] === '\\') {
+			pos.column -= 1;
+			skipDlCheck = true;
+		}
+
 		if (!skipDlCheck) {
-			if (char === "'" || char === "\"" || char === "`") {
-					delimiter = char
-					break
+			if (char === "'" || char === '"' || char === '`') {
+					delimiter = char;
+					break;
 			}
 		}
-		skipDlCheck = false
-		
-		pos.column -= 1
-		
+		skipDlCheck = false;
+
+		pos.column -= 1;
+
 		if (pos.column < 0) {
-			pos.line -= 1
-			pos.column = ast[pos.line].length
-			i = pos.column + 1
+			pos.line -= 1;
+			pos.column = ast[pos.line].length;
+			i = pos.column + 1;
 			if (pos.line < 0) {
-				return ["EOF", ""]
+				return ['EOF', ''];
 			}
 		}
 	}
-	return [pos, delimiter]
+	return [pos, delimiter];
 }
 
 
@@ -200,39 +200,39 @@ function getStartQuote(ast, sel) {
 function getEndQuote(ast, sel, numLines) {
 	const initial = {
 		line: sel.start.line,
-		column: sel.start.character
-	}
-	const pos = { ...initial }
-	let delimiter
-	let skipDlCheck = false
-	
+		column: sel.start.character,
+	};
+	const pos = { ...initial };
+	let delimiter;
+	let skipDlCheck = false;
+
 	for (let i = initial.column, j = 0; i >= 0; i++, j++) {
-		const char = ast[pos.line].line[pos.column]
-		
+		const char = ast[pos.line].line[pos.column];
+
 		// Eat escaped quote
-		if (char === "\\") {
-			pos.column += 1
-			skipDlCheck = true
+		if (char === '\\') {
+			pos.column += 1;
+			skipDlCheck = true;
 		}
-	
+
 		if (!skipDlCheck) {
-			if (char === "'" || char === "\"" || char === "`") {
-				delimiter = char
-				break
+			if (char === "'" || char === '"' || char === '`') {
+				delimiter = char;
+				break;
 			}
 		}
-		skipDlCheck = false
+		skipDlCheck = false;
 
-		pos.column += 1
+		pos.column += 1;
 
 		if (pos.column > ast[pos.line].length) {
-			pos.line += 1
-			pos.column = 0
-			i = pos.column
+			pos.line += 1;
+			pos.column = 0;
+			i = pos.column;
 			if (pos.line > numLines) {
-				return ["EOF", ""]
+				return ['EOF', ''];
 			}
 		}
 	}
-	return [pos, delimiter]
+	return [pos, delimiter];
 }
