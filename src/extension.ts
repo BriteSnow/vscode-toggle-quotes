@@ -135,7 +135,7 @@ function findChar(chars: Quotes[], startDelimiter: string, endDelimiter: string)
 
 function buildAST(text) {
 	const ast = {};
-	const lines = text.split(/(?<=\r?\n)/g);
+	const lines = text.split(/\r?\n/g);
 
 	let numLines = 0;
 
@@ -168,7 +168,7 @@ function getStartQuote(ast, sel) {
 		const nextChar = ast[pos.line].line[pos.column - 1];
 
 		// Eat escaped quote
-		if (nextChar === '\\') {
+		if (nextChar === '\\' || j === 0) {
 			pos.column -= 1;
 			continue;
 		}
@@ -216,7 +216,13 @@ function getEndQuote(ast, sel, numLines) {
 
 	for (let i = pos.column, j = 0; i >= 0; i++, j++) {
 		const char = ast[pos.line].line[pos.column];
+		const prevChar = ast[pos.line].line[pos.column - 1];
 		const nextChar = ast[pos.line].line[pos.column + 1];
+		
+		if (prevChar === '\\') {
+			pos.column += 1;
+			continue;
+		}
 
 		switch (char) {
 			case '\\':
