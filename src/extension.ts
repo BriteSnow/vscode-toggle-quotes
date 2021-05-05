@@ -52,7 +52,7 @@ function toggle() {
 		const [ast, numLines] = buildAST(text);
 		const [startPos, startDelim] = getStartQuote(ast, sel);
 		const [endPos, endDelim] = getEndQuote(ast, sel, numLines);
-		
+
 		if (startDelim === 'EOF' || endDelim === 'EOF') return;
 		if (startPos.column ===	endPos.column && startPos.line ===	endPos.line) return;
 
@@ -159,42 +159,61 @@ type QuoteDataReturn = [Pos, string]
 function getStartQuote(ast, sel): QuoteDataReturn {
 	const pos: Pos = {
 		line: sel.start.line,
-		column: sel.start.character - 1,
+		column: sel.start.character,
 	};
 
+	function eatLine() {
+		while (pos.column <= 0) {
+			pos.line -= 1;
+			if (pos.line < 0) {
+				return 'EOF';
+			} else {
+				pos.column = ast[pos.line].length - 1;
+			}
+		}
+	}
+
 	if (pos.column <= 0) {
-		pos.line -= 1;
-		if (pos.line < 0) {
+		const el = eatLine();
+		if (el === 'EOF') {
 			return [
 				{
 					line: -1,
 					column: -1,
 				},
-				'EOF'
+				'EOF',
 			];
 		}
-		pos.column = ast[pos.line].length;
 	}
 
 	let delimiter;
 
-	for (let i = pos.column; i >= 0; i--) {
-		if (pos.line < 0 && pos.column < 0) {
-			return [
-				{
-					line: -1,
-					column: -1,
-				},
-				'EOF'
-			];
+	for (let i = pos.column, j = 0; i >= 0; i--, j++) {
+		if (j === 0) {
+			pos.column -= 1;
+			continue;
+		}
+		if (pos.column < 0) {
+			const el = eatLine();
+			if (el === 'EOF') {
+				return [
+					{
+						line: -1,
+						column: -1,
+					},
+					'EOF',
+				];
+			}
+			i = pos.column;
+			continue;
 		}
 
-		const char = ast[pos.line].line[pos.column];
-		let nextChar = ""
+		let char = ast[pos.line]?.line && ast[pos.line]?.line[pos.column];
+		let nextChar = '';
 		if (pos.line >= 0 && pos.column - 1 >= 0) {
-			nextChar = ast[pos.line].line[pos.column - 1]
+			nextChar = ast[pos.line]?.line && ast[pos.line]?.line[pos.column - 1];
 		}
-		
+
 		// Eat escaped quote
 		if (nextChar === '\\') {
 			pos.column -= 1;
@@ -221,17 +240,16 @@ function getStartQuote(ast, sel): QuoteDataReturn {
 		pos.column -= 1;
 
 		if (pos.column < 0) {
-			pos.line -= 1;
-			if (pos.line < 0) {
+			const el = eatLine();
+			if (el === 'EOF') {
 				return [
 					{
 						line: -1,
 						column: -1,
 					},
-					'EOF'
+					'EOF',
 				];
 			}
-			pos.column = ast[pos.line].length;
 			i = pos.column;
 		}
 	}
@@ -255,7 +273,7 @@ function getEndQuote(ast, sel, numLines): QuoteDataReturn {
 					line: -1,
 					column: -1,
 				},
-				'EOF'
+				'EOF',
 			];
 		}
 	}
@@ -269,14 +287,14 @@ function getEndQuote(ast, sel, numLines): QuoteDataReturn {
 					line: -1,
 					column: -1,
 				},
-				'EOF'
+				'EOF',
 			];
 		}
 
 		const char = ast[pos.line].line[pos.column];
 		const prevChar = ast[pos.line].line[pos.column - 1];
 		const nextChar = ast[pos.line].line[pos.column + 1];
-		
+
 		if (prevChar === '\\') {
 			pos.column += 1;
 			continue;
@@ -315,7 +333,7 @@ function getEndQuote(ast, sel, numLines): QuoteDataReturn {
 						line: -1,
 						column: -1,
 					},
-					'EOF'
+					'EOF',
 				];
 			}
 		}
