@@ -36,7 +36,7 @@ function toggle() {
 
 	try {
 		// File extension specific delimiters (package.json contributes.configurationDefaults)
-		let [charsInfo, status] = getChars(editor);
+		let [charsInfo, status] = getQuoteTypes(editor);
 		// Early return for unsupported file types
 		if (status === 'UNSUPPORTED_FILE_TYPE') return;
 		chars = charsInfo;
@@ -50,17 +50,18 @@ function toggle() {
 	for (const sel of editor.selections) {
 		const text = editor.document.getText();
 		const [ast, numLines] = buildAST(text);
-		const [startPos, startDelimiter] = getStartQuote(ast, sel);
-		const [endPos, endDelimiter] = getEndQuote(ast, sel, numLines);
+		const [startPos, startDelim] = getStartQuote(ast, sel);
+		const [endPos, endDelim] = getEndQuote(ast, sel, numLines);
+		
+		if (startDelim === 'EOF' || endDelim === 'EOF') return;
+		if (startPos.column ===	endPos.column && startPos.line ===	endPos.line) return;
 
-		if (startPos === 'EOF' || endPos === 'EOF') return;
-
-		const charInfo = findChar(chars, startDelimiter, endDelimiter);
+		const charInfo = findChar(chars, startDelim, endDelim);
 
 		if (charInfo) {
 			const foundCharIdx = chars.indexOf(charInfo);
 			const nextChar = chars[(foundCharIdx + 1) % chars.length];
-			// console.log(`begin: Found ${startDelimiter} at line ${startPos.line} column ${startPos.column}\nend: Found ${endDelimiter} at line ${endPos.line} column ${endPos.column}\nwill change to :\n${JSON.stringify(nextChar, null, 2)}`);
+			// console.log(`begin: Found ${startDelim} at line ${startPos.line} column ${startPos.column}\nend: Found ${endDelim} at line ${endPos.line} column ${endPos.column}\nwill change to :\n${JSON.stringify(nextChar, null, 2)}`);
 
 			const first = new Position(startPos.line, startPos.column);
 			const firstSelection = new Selection(first, new Position(first.line, first.character + 1));
@@ -81,7 +82,7 @@ function toggle() {
 
 
 
-function getChars(editor: TextEditor): [Quotes[], string] {
+function getQuoteTypes(editor: TextEditor): [Quotes[], string] {
 	const doc = editor.document;
 	const langId = doc.languageId;
 
@@ -122,12 +123,10 @@ function getChars(editor: TextEditor): [Quotes[], string] {
 
 
 /** Find the .start and .end of a char (from the chars list) or null if any side is not found */
-function findChar(chars: Quotes[], startDelimiter: string, endDelimiter: string): Quotes {
+function findChar(chars: Quotes[], startDelim: string, endDelim: string): Quotes {
 	let foundQuotes: Quotes = null;
-
-	foundQuotes = chars.find((quotes) => quotes.begin === startDelimiter);
-	foundQuotes = chars.find((quotes) => quotes.end === endDelimiter);
-
+	foundQuotes = chars.find((quotes) => quotes.begin === startDelim);
+	foundQuotes = chars.find((quotes) => quotes.end === endDelim);
 	return foundQuotes;
 }
 
@@ -150,25 +149,54 @@ function buildAST(text) {
 }
 
 
+interface Pos {
+	line: number,
+	column: number,
+}
 
-function getStartQuote(ast, sel) {
-	const pos = {
+type QuoteDataReturn = [Pos, string]
+
+function getStartQuote(ast, sel): QuoteDataReturn {
+	const pos: Pos = {
 		line: sel.start.line,
-		column: sel.start.character,
+		column: sel.start.character - 1,
 	};
+
+	if (pos.column <= 0) {
+		pos.line -= 1;
+		if (pos.line < 0) {
+			return [
+				{
+					line: -1,
+					column: -1,
+				},
+				'EOF'
+			];
+		}
+		pos.column = ast[pos.line].length;
+	}
 
 	let delimiter;
 
-	for (let i = pos.column, j = 0; i >= 0; i--, j++) {
-		if (pos.line <= 0 && pos.column <= 0) {
-			return 'EOF';
+	for (let i = pos.column; i >= 0; i--) {
+		if (pos.line < 0 && pos.column < 0) {
+			return [
+				{
+					line: -1,
+					column: -1,
+				},
+				'EOF'
+			];
 		}
 
 		const char = ast[pos.line].line[pos.column];
-		const nextChar = ast[pos.line].line[pos.column - 1];
-
+		let nextChar = ""
+		if (pos.line >= 0 && pos.column - 1 >= 0) {
+			nextChar = ast[pos.line].line[pos.column - 1]
+		}
+		
 		// Eat escaped quote
-		if (nextChar === '\\' || j === 0) {
+		if (nextChar === '\\') {
 			pos.column -= 1;
 			continue;
 		}
@@ -194,11 +222,17 @@ function getStartQuote(ast, sel) {
 
 		if (pos.column < 0) {
 			pos.line -= 1;
-			pos.column = ast[pos.line].length;
-			i = pos.column + 1;
 			if (pos.line < 0) {
-				return ['EOF', ''];
+				return [
+					{
+						line: -1,
+						column: -1,
+					},
+					'EOF'
+				];
 			}
+			pos.column = ast[pos.line].length;
+			i = pos.column;
 		}
 	}
 	return [pos, delimiter];
@@ -206,15 +240,39 @@ function getStartQuote(ast, sel) {
 
 
 
-function getEndQuote(ast, sel, numLines) {
-	const pos = {
+function getEndQuote(ast, sel, numLines): QuoteDataReturn {
+	const pos: Pos = {
 		line: sel.start.line,
 		column: sel.start.character,
 	};
 
+	if (pos.column >= ast[pos.line].length) {
+		pos.line += 1;
+		pos.column = 0;
+		if (pos.line >= numLines) {
+			return [
+				{
+					line: -1,
+					column: -1,
+				},
+				'EOF'
+			];
+		}
+	}
+
 	let delimiter;
 
 	for (let i = pos.column, j = 0; i >= 0; i++, j++) {
+		if (pos.line > numLines && pos.column > ast[pos.line].length) {
+			return [
+				{
+					line: -1,
+					column: -1,
+				},
+				'EOF'
+			];
+		}
+
 		const char = ast[pos.line].line[pos.column];
 		const prevChar = ast[pos.line].line[pos.column - 1];
 		const nextChar = ast[pos.line].line[pos.column + 1];
@@ -229,9 +287,9 @@ function getEndQuote(ast, sel, numLines) {
 				// Eat escaped quote
 				pos.column += 1;
 				break;
-			case "'":
-				// Eat apostrophes
-				if (nextChar && !nextChar.match(/\w/)) {
+				case "'":
+					// Eat apostrophes
+					if (nextChar && !nextChar.match(/\w/)) {
 					delimiter = char;
 				}
 				break;
@@ -252,7 +310,13 @@ function getEndQuote(ast, sel, numLines) {
 			pos.column = 0;
 			i = pos.column;
 			if (pos.line > numLines) {
-				return ['EOF', ''];
+				return [
+					{
+						line: -1,
+						column: -1,
+					},
+					'EOF'
+				];
 			}
 		}
 	}
