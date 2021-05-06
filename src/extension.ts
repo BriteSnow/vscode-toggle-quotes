@@ -223,7 +223,7 @@ function getStartQuote(ast, sel): QuoteDataReturn {
 		switch (char) {
 			case "'":
 				// Eat apostrophes
-				if (nextChar && !nextChar.match(/\w/)) {
+				if (nextChar && !nextChar.match(/\w/) || !!nextChar === false) {
 					delimiter = char;
 				}
 				break;
@@ -293,7 +293,10 @@ function getEndQuote(ast, sel, numLines): QuoteDataReturn {
 
 		const char = ast[pos.line].line[pos.column];
 		const prevChar = ast[pos.line].line[pos.column - 1];
-		const nextChar = ast[pos.line].line[pos.column + 1];
+		let nextChar = '';
+		if (pos.column + 1 <= ast[pos.line]?.line.length) {
+			nextChar = ast[pos.line]?.line && ast[pos.line]?.line[pos.column + 1];
+		}
 
 		if (prevChar === '\\') {
 			pos.column += 1;
@@ -305,9 +308,9 @@ function getEndQuote(ast, sel, numLines): QuoteDataReturn {
 				// Eat escaped quote
 				pos.column += 1;
 				break;
-				case "'":
+			case "'":
 					// Eat apostrophes
-					if (nextChar && !nextChar.match(/\w/)) {
+					if (nextChar && !nextChar.match(/\w/) || !!nextChar === false) {
 					delimiter = char;
 				}
 				break;
