@@ -64,6 +64,13 @@
                     "`"
                 ]
             },
+            "[svelte]": {
+                "togglequotes.chars": [
+                    "\"",
+                    "'",
+                    "`"
+                ]
+            },
             "[markdown]": {
                 "togglequotes.chars": [
                     "\"",
