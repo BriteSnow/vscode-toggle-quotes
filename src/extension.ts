@@ -46,22 +46,31 @@ function toggle() {
 
 	const changes: { char: string, selection: Selection }[] = [];
 
-
 	for (const sel of editor.selections) {
 		const content = doc.lineAt(sel.start.line);
 		const charInfo = findChar(chars, content.text, sel);
 
 		if (charInfo) {
+			const is_empty_case = charInfo.foundQuotes.begin === '';
 			const foundCharIdx = chars.indexOf(charInfo.foundQuotes);
 			const nextChar = chars[(foundCharIdx + 1) % chars.length];
 			// console.log(`found ${charInfo.start} - ${charInfo.end} will change to : ${nextChar}`);
 
 			const first = new Position(sel.start.line, charInfo.start);
-			const firstSelection = new Selection(first, new Position(first.line, first.character + 1));
+			let first_selection_active_character = first.character + 1
+			if (is_empty_case) {
+				first_selection_active_character -= 1
+			}
+			const firstSelection = new Selection(first, new Position(first.line, first_selection_active_character));
 			changes.push({ char: nextChar.begin, selection: firstSelection });
 
-			const second = new Position(sel.start.line, charInfo.end);
-			const secondSelection = new Selection(second, new Position(second.line, second.character + 1));
+			let second_position_character = charInfo.end
+			let second_selection_active_character = second_position_character + 1
+			if (is_empty_case) {
+				second_position_character += 1
+			}
+			const second = new Position(sel.start.line, second_position_character);
+			const secondSelection = new Selection(second, new Position(second.line, second_selection_active_character));
 			changes.push({ char: nextChar.end, selection: secondSelection });
 		}
 
@@ -87,12 +96,17 @@ function findChar(chars: Quotes[], txt: string, sel: Selection): { start: number
 
 	let foundQuotes: Quotes = null;
 
+	let empty_quote: any = chars.find((quotes) => quotes.end === '');
+	let potential_empty_case_end: number = -1;
 	// find the index of next char from end selection
 	for (let i = sel.end.character; i < txt.length; i++) {
 		const c = txt[i];
 		const beforeC = (i > 0) ? txt[i - 1] : null; // the previous character (to see if it is '\')
 		if (beforeC !== '\\') {
 			foundQuotes = chars.find((quotes) => quotes.end === c);
+			if (empty_quote && potential_empty_case_end == -1 && c == ' ') {
+				potential_empty_case_end = i - 1;
+			}
 			if (foundQuotes) {
 				end = i;
 				break;
@@ -100,15 +114,36 @@ function findChar(chars: Quotes[], txt: string, sel: Selection): { start: number
 		}
 	}
 
+	let is_end_empty: Boolean = false;
+	if (empty_quote && end === -1) {
+		if (potential_empty_case_end > -1) {
+			end = potential_empty_case_end;
+		} else {
+			end = txt.length - 1;
+		}
+		is_end_empty = true;
+		foundQuotes = empty_quote;
+	}
 	// find the index of previous char (note at this point we should have the found char)
+	let potential_empty_case_start: number = -1;
 	for (let i = sel.start.character - 1; i > -1; i--) {
 		const c = txt[i];
 		const beforeC = (i > 0) ? txt[i - 1] : null; // the previous character (to see if it is '\')
 		if (beforeC !== '\\') {
+			if (is_end_empty && potential_empty_case_start == -1 && c == ' ') {
+				potential_empty_case_start = i + 1;
+			}
 			if (foundQuotes.begin === c) {
 				start = i;
 				break;
 			}
+		}
+	}
+	if (is_end_empty && start === -1) {
+		if (potential_empty_case_start > -1) {
+			start = potential_empty_case_start;
+		} else {
+			start = 0;
 		}
 	}
 
@@ -146,7 +181,7 @@ function getChars(editor: TextEditor): Quotes[] {
 					throw Error('Wrong togglequotes.chars array quotes pair format. Use ["<", ">"]');
 				}
 				chars[i] = { begin: char[0], end: char[1] };
-			} else if (!char.begin || !char.end) {
+			} else if (char.begin === undefined || char.end === undefined) {
 				throw Error('Wrong togglequotes.chars object quotes pair format. Use { "begin": "<", "end": ">" } ');
 			}
 		} else {
