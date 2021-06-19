@@ -29,7 +29,8 @@
                     "type": "array",
                     "default": [
                         "\"",
-                        "'"
+                        "'",
+                        ""
                     ],
                     "description": "Type of quotes to toggle from."
                 }
