@@ -71,6 +71,13 @@
                     "`"
                 ]
             },
+            "[vue]": {
+                "togglequotes.chars": [
+                    "\"",
+                    "'",
+                    "`"
+                ]
+            },
             "[markdown]": {
                 "togglequotes.chars": [
                     "\"",
