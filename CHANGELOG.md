@@ -2,11 +2,9 @@
 
 `-` fix, `+` addition, `.` minor, `!` change. 
 
-
 ### 0.3.5 Aug 23 2021
 
-- `+` run automatically in remote dev (thanks to 
-Brian Malehorn [@bmalehorn](https://github.com/bmalehorn))
+- `+` Run automatically in remote dev (thanks to Brian Malehorn [@bmalehorn](https://github.com/bmalehorn))
 - `.` Add backtick for `Go` and `Svelte` (thanks to [@jameygleason](https://github.com/jameygleason))
 
 ### 0.3.4 Feb 14 2021

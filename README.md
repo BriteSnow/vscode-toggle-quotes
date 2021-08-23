@@ -8,9 +8,7 @@
 - Any other files: `"` to `'`
 - Also available different start and end of wrap characters: `<`/`>`, `[`/`]`, `«`/`»` etc. (thanks to [@dirondin](https://github.com/dirondin) )
 
-> **IMPORTANT USABILITY NOTE**: By design what is selected will be ignored by the toggle logic. This allows dead-simple code and maximum user flexibility to select what needs to be execluded. So the `toggle` will start to find the matching from the start and end of the selection. 
-
-> There are some work going on to make the quote matching logic smarter without loosing the feature above. 
+> **IMPORTANT USABILITY NOTE**: By design, what is selected will be ignored by the toggle logic. This allows dead-simple code and maximum user flexibility to select what needs to be excluded. So the `toggle` will start to find the matching from the start and end of the selection.
 
 Customizable, see below.
 
@@ -43,9 +41,11 @@ Customizable, see below.
 ### Credits
 
 - [@dirondin](https://github.com/dirondin) - for the start and end wrap characters support
-- [@will-stone](https://github.com/will-stone) - for the icon
+- [@will-stone](https://github.com/will-stone) - for the cool icon.
+- [@jameygleason](https://github.com/jameygleason) - for Go and Svelte backtick support
+- [@bmalehorn](https://github.com/bmalehorn) - for Run automatically in remote dev
 
 ### Self-centered promotion
 
-- https://www.youtube.com/jeremychone - **Rust Developmment YouTube channel** (RustLang Tutorials & Courses, Fun Coding Sessions, Game Dev Fun, Prod Cloud Apps dev)
+- https://www.youtube.com/jeremychone - **Rust Development YouTube channel** (RustLang Tutorials & Courses, Fun Coding Sessions, Game Dev Fun, Prod Cloud Apps dev)
 
