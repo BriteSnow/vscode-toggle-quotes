@@ -4,9 +4,13 @@
 
 `cmd '` (`ctrl '` on win/linux) will cycle the first quote pair found (from the start/end of the section) through the following sequence: 
 
-- Typescript, JavaScript, Markdown: `"` to `'` to ` 
+- Typescript, JavaScript, Markdown, Go, Svelte: `"` to `'` to ` 
 - Any other files: `"` to `'`
 - Also available different start and end of wrap characters: `<`/`>`, `[`/`]`, `«`/`»` etc. (thanks to [@dirondin](https://github.com/dirondin) )
+
+> **IMPORTANT USABILITY NOTE**: By design what is selected will be ignored by the toggle logic. This allows dead-simple code and maximum user flexibility to select what needs to be execluded. So the `toggle` will start to find the matching from the start and end of the selection. 
+
+> There are some work going on to make the quote matching logic smarter without loosing the feature above. 
 
 Customizable, see below.
 
@@ -43,4 +47,5 @@ Customizable, see below.
 
 ### Self-centered promotion
 
-- [Big App, Small Team YouTube Channel](https://www.youtube.com/jeremychone). New dev channel about #**RuntimeFirst** code-design approaches (v.s., Framework centric approaches). Starting with some Native Web Components best practices (v.s., React, Angular), and will eventually cover full-stack development and DevOps with simple and scalable best practices for Node.js, docker, and Kubernetes. #SimpleScalesBetter (feedback welcome on YouTube videos or [Big App, Small Team, discord server](https://discord.com/channels/808391200309772339/808391200309772343))
+- https://www.youtube.com/jeremychone - **Rust Developmment YouTube channel** (RustLang Tutorials & Courses, Fun Coding Sessions, Game Dev Fun, Prod Cloud Apps dev)
+
