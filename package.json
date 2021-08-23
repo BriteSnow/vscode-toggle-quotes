@@ -18,6 +18,10 @@
     "activationEvents": [
         "onCommand:editor.togglequotes"
     ],
+    "extensionKind": [
+      "ui",
+      "workspace"
+    ],
     "main": "./out/src/extension",
     "icon": "icon.png",
     "contributes": {
