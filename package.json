@@ -30,6 +30,9 @@
             "properties": {
                 "togglequotes.chars": {
                     "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
                     "default": [
                         "\"",
                         "'"
