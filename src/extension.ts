@@ -1,7 +1,7 @@
 'use strict';
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import { window, workspace, WorkspaceConfiguration, TextLine, Position, Selection, commands, ExtensionContext, TextEditor } from 'vscode';
+import { window, workspace, Position, Selection, commands, ExtensionContext, TextEditor } from 'vscode';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -123,18 +123,8 @@ function findChar(chars: Quotes[], txt: string, sel: Selection): { start: number
 
 
 function getChars(editor: TextEditor): Quotes[] {
-	const doc = editor.document;
-	const langId = doc.languageId;
-
-	let langProps = workspace.getConfiguration().get(`[${langId}]`);
-
-	let chars = null;
-
-	if (langProps) {
-		chars = langProps['togglequotes.chars'];
-	}
-
-	chars = chars || workspace.getConfiguration('togglequotes').get('chars') || [];
+	const maybeChars = workspace.getConfiguration('togglequotes', editor.document).get('chars');
+	const chars = Array.isArray(maybeChars) ? maybeChars : [];
 
 	// Transform properties to begin/end pair
 	chars.forEach((char: any, i: number, chars: any[]) => {
