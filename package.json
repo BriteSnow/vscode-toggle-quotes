@@ -37,7 +37,8 @@
                         "\"",
                         "'"
                     ],
-                    "description": "The quote characters to toggle between."
+                    "description": "The quote characters to toggle between.",
+                    "scope": "language-overridable"
                 }
             }
         },
