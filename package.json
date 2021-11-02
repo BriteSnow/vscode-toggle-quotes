@@ -26,8 +26,7 @@
     "icon": "icon.png",
     "contributes": {
         "configuration": {
-            "type": "object",
-            "title": "toggle-quotes configuration",
+            "title": "Toggle Quotes",
             "properties": {
                 "togglequotes.chars": {
                     "type": "array",
