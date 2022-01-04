@@ -40,6 +40,9 @@ Customizable, see below.
 
 ### Credits
 
+- [@Kerigard](https://github.com/Kerigard) - backtick in vue.js
+- [@bmalehorn](https://github.com/bmalehorn) - remote dev support
+- [@awmottaz](https://github.com/awmottaz) - improving settings interface (and package.json cleanup)
 - [@dirondin](https://github.com/dirondin) - for the start and end wrap characters support
 - [@will-stone](https://github.com/will-stone) - for the cool icon.
 - [@jameygleason](https://github.com/jameygleason) - for Go and Svelte backtick support
