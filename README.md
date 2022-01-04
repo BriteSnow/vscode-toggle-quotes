@@ -7,10 +7,18 @@
 - Typescript, JavaScript, Markdown, Go, Svelte: `"` to `'` to ` 
 - Any other files: `"` to `'`
 - Also available different start and end of wrap characters: `<`/`>`, `[`/`]`, `«`/`»` etc. (thanks to [@dirondin](https://github.com/dirondin) )
+- Customizable, see below.
 
-> **IMPORTANT USABILITY NOTE**: By design, what is selected will be ignored by the toggle logic. This allows dead-simple code and maximum user flexibility to select what needs to be excluded. So the `toggle` will start to find the matching from the start and end of the selection.
+**IMPORTANT**: By design, what is selected will be ignored by the toggle logic, and the quote match will be from the start and end of the selection. This allows dead-simple code and maximum user flexibility to select what needs to be excluded. So the `toggle` will start to find the matching from the start and end of the selection.
 
-Customizable, see below.
+For example, assuming `[` is start of selection and `]` end of selection.
+
+```
+example "with s[ome other] text" and more
+            <--           -->
+```
+
+The quote match will happen from start selection going left and end selection going right. Toggle Quotes support multiple selections applying the same rule for each.
 
 ### Features
 
