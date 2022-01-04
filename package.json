@@ -19,23 +19,26 @@
         "onCommand:editor.togglequotes"
     ],
     "extensionKind": [
-      "ui",
-      "workspace"
+        "ui",
+        "workspace"
     ],
     "main": "./out/src/extension",
     "icon": "icon.png",
     "contributes": {
         "configuration": {
-            "type": "object",
-            "title": "toggle-quotes configuration",
+            "title": "Toggle Quotes",
             "properties": {
                 "togglequotes.chars": {
                     "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
                     "default": [
                         "\"",
                         "'"
                     ],
-                    "description": "Type of quotes to toggle from."
+                    "description": "The quote characters to toggle between.",
+                    "scope": "language-overridable"
                 }
             }
         },
@@ -114,14 +117,13 @@
     "scripts": {
         "vscode:prepublish": "tsc -p ./",
         "compile": "tsc -watch -p ./",
-        "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "node ./node_modules/vscode/bin/test"
+        "test": "echo \"No tests configured\""
     },
     "devDependencies": {
         "@types/mocha": "^9.0.0",
         "@types/node": "^16.7.1",
+        "@types/vscode": "^1.61.0",
         "mocha": "^9.1.0",
-        "typescript": "^4.3.5",
-        "vscode": "^1.1.17"
+        "typescript": "^4.3.5"
     }
 }
