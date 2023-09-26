@@ -20,6 +20,8 @@ example "with s[ome other] text" and more
 
 The quote match will happen from start selection going left and end selection going right. Toggle Quotes support multiple selections applying the same rule for each.
 
+**A Note On Keyboard Shortcuts**: Quote keys on keyboard layouts are a special kind of tricky, because they vary a lot on keyboard layouts. They can have sticky keys, double press alternatives, mandatory modifiers or just plain different meanings. Is your layout International, Alternative-International, Nordic or something that doesn't seem to be working by default, you should configure a shortcut that works for you. Go to _Keyboard Shortcuts_ > _Toggle Quote_ and enter your own keybinding. For example, press `Ctrl` + `Shift` + `'` and accept whatever character will show up.
+
 ### Features
 
 - Typescript, JavaScript, Markdown, JSX (since 0.3.2, thanks to @evaera) toggles: `"` to `'` to ` 
