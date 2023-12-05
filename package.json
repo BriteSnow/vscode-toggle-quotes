@@ -1,5 +1,5 @@
 {
-    "name": "vscode-toggle-quotes",
+    "name": "vscode-toggle-quotes", 
     "displayName": "Toggle Quotes",
     "description": "Toggle cycle \" -> ' -> `",
     "version": "0.3.6",
@@ -23,6 +23,7 @@
         "workspace"
     ],
     "main": "./out/src/extension",
+    "browser": "./out/src/extension",
     "icon": "icon.png",
     "contributes": {
         "configuration": {
