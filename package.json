@@ -85,6 +85,13 @@
                     "`"
                 ]
             },
+            "[astro]": {
+                "togglequotes.chars": [
+                    "\"",
+                    "'",
+                    "`"
+                ]
+            },
             "[markdown]": {
                 "togglequotes.chars": [
                     "\"",
